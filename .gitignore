@@ -1,0 +1,13 @@
+# Files and folders git must never track
+
+# Python bytecode cache, auto-generated on every run
+__pycache__/
+
+# Compiled Python files (* = any name)
+*.pyc
+
+# Virtual env: local packages, rebuilt from requirements.txt
+.venv/
+
+# Local secrets (API keys); never push them to GitHub
+.env
