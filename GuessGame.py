@@ -34,3 +34,16 @@ def get_guess_from_user(difficulty):
 def compare_results(secret_number, guess):
     # == compares two values and gives True or False
     return secret_number == guess
+
+# Run one round of the Guess Game: True = win, False = loss
+def play(difficulty):
+    # Show which game started
+    print("Guess Game: guess the secret number!")
+    # Pick the secret number, without showing it
+    secret_number = generate_number(difficulty)
+    # Ask until the player gives one valid guess
+    guess = get_guess_from_user(difficulty)
+    # Reveal the number only after the guess
+    print(f"The secret number was {secret_number}.")
+    # Compare, and send True or False back to the caller
+    return compare_results(secret_number, guess)
