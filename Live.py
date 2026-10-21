@@ -37,4 +37,8 @@ def load_game():
     print("1. Memory Game - a sequence of numbers will appear for 0.7 seconds, repeat it back")
     print("2. Guess Game - guess the secret number the computer chose")
     print("3. Currency Roulette - guess the ILS value of a random USD amount\n")
+
     game = get_number("Enter game number (1-3): ", 1, 3)
+    
+    # Ask for the difficulty, same check with range 1-5
+    difficulty = get_number("Please choose game difficulty from 1 to 5: ", 1, 5)
