@@ -29,3 +29,8 @@ def get_guess_from_user(difficulty):
             return guess
         # Out of range: explain, then the loop asks again
         print(f"Please choose a number from 1 to {difficulty}.")
+
+# Return True if the guess matches the secret number, otherwise False
+def compare_results(secret_number, guess):
+    # == compares two values and gives True or False
+    return secret_number == guess
