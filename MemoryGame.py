@@ -72,3 +72,17 @@ def is_list_equal(list1, list2):
     return list1 == list2
 
 
+# Run one round of the Memory Game: True = win, False = loss
+def play(difficulty):
+    # Show which game started
+    print("Memory Game: remember the numbers!")
+    # Make the random list
+    sequence = generate_sequence(difficulty)
+    # Show it for 0.7 seconds, then clear the screen
+    display_sequence(sequence)
+    # Ask until the player gives a valid list
+    user_list = get_list_from_user(difficulty)
+    # Reveal the sequence only after the answer
+    print(f"The sequence was {sequence}.")
+    # Compare, and send True or False back to the caller
+    return is_list_equal(sequence, user_list)
