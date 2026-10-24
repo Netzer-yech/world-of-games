@@ -64,3 +64,11 @@ def get_list_from_user(difficulty):
             continue
         # Count and values are valid: give the list back
         return numbers
+
+
+# True only if both lists have the same numbers in the same order
+def is_list_equal(list1, list2):
+    # == on lists compares item by item, position by position
+    return list1 == list2
+
+
