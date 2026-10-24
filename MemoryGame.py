@@ -36,3 +36,31 @@ def display_sequence(sequence):
     time.sleep(0.7)
     # Wipe the screen so the numbers can't be read anymore
     clear_screen()
+
+
+# Ask until the player enters exactly difficulty whole numbers
+def get_list_from_user(difficulty):
+    # Repeat until "return" is reached with a valid list
+    while True:
+        # Explain the format, then read the whole line as text
+        answer = input(f"Enter the {difficulty} numbers you saw, separated by spaces: ")
+        # split() cuts the text at the spaces: "12 7 12" -> ["12", "7", "12"]
+        parts = answer.split()
+        # len() counts the items. Wrong count -> explain and ask again
+        if len(parts) != difficulty:
+            print(f"Please enter exactly {difficulty} numbers.")
+            continue
+        # Start an empty list for the converted numbers
+        numbers = []
+        # Try to turn every part into a whole number
+        try:
+            # Go over the parts one by one
+            for part in parts:
+                # Convert the text to a number and add it to the list
+                numbers.append(int(part))
+        # One part was not a whole number, e.g. "abc" or "2.5"
+        except ValueError:
+            print("Please use whole numbers only, separated by spaces.")
+            continue
+        # Count and values are valid: give the list back
+        return numbers
