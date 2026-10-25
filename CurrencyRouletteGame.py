@@ -1,5 +1,5 @@
-# Exact decimal math for money, and the normal rounding rule
-from decimal import Decimal, ROUND_HALF_UP
+# Exact decimal math for money, its input error, and the rounding rule
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 # HTTP package for calling the currency API (from requirements.txt)
 import requests
@@ -27,6 +27,7 @@ def get_usd_to_ils_rate():
     except (requests.RequestException, ValueError, KeyError):
         return None
 
+
 # Return the lowest and highest winning answers, in ILS, rounded to 2 places
 def get_money_interval(usd_amount, rate, difficulty):
     # str() first, so the float's binary noise doesn't enter the Decimal
@@ -37,3 +38,24 @@ def get_money_interval(usd_amount, rate, difficulty):
     margin = Decimal(5 - difficulty)
     # Return both bounds together
     return t - margin, t + margin
+
+
+# Ask until the player enters a number of 0 or more, like 145 or 145.50
+def get_guess_from_user(usd_amount):
+    # Repeat until "return" is reached with a valid guess
+    while True:
+        # Show only the USD amount, never the rate or the answer
+        answer = input(f"How many ILS is {usd_amount} USD? ")
+        # Try to turn the text into an exact Decimal
+        try:
+            guess = Decimal(answer)
+        # Not a number: empty, text, "1,000"...
+        except InvalidOperation:
+            print("Please enter a number, like 145 or 145.50.")
+            continue
+        # A real number (not NaN/Infinity) and not negative
+        if guess.is_finite() and guess >= 0:
+             # Round to agorot, the same rounding as the correct answer
+            return guess.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        # Negative or not a real number: explain, then ask again
+        print("Please enter a number of 0 or more, like 145 or 145.50.")
