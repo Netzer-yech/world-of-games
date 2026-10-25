@@ -1,3 +1,6 @@
+# Exact decimal math for money, and the normal rounding rule
+from decimal import Decimal, ROUND_HALF_UP
+
 # HTTP package for calling the currency API (from requirements.txt)
 import requests
 
@@ -23,3 +26,14 @@ def get_usd_to_ils_rate():
     # Network error, timeout, bad HTTP status, invalid JSON, or a missing key
     except (requests.RequestException, ValueError, KeyError):
         return None
+
+# Return the lowest and highest winning answers, in ILS, rounded to 2 places
+def get_money_interval(usd_amount, rate, difficulty):
+    # str() first, so the float's binary noise doesn't enter the Decimal
+    exact_rate = Decimal(str(rate))
+    # t = the correct ILS amount, rounded to 2 places (agorot)
+    t = (Decimal(usd_amount) * exact_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    # Allowed distance from t: difficulty 1 -> 4, difficulty 5 -> 0
+    margin = Decimal(5 - difficulty)
+    # Return both bounds together
+    return t - margin, t + margin
