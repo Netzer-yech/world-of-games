@@ -1,5 +1,7 @@
 # Exact decimal math for money, its input error, and the rounding rule
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+# Python's built-in module for random numbers
+import random
 
 # HTTP package for calling the currency API (from requirements.txt)
 import requests
@@ -59,3 +61,25 @@ def get_guess_from_user(usd_amount):
             return guess.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         # Negative or not a real number: explain, then ask again
         print("Please enter a number of 0 or more, like 145 or 145.50.")
+
+
+# Run one round of Currency Roulette: True = win, False = loss or cancelled
+def play(difficulty):
+    # Show which game started
+    print("Currency Roulette: guess the ILS value of a USD amount!")
+    # Get the rate once; the whole round uses this same rate
+    rate = get_usd_to_ils_rate()
+    # No rate = cancel the round before asking anything, never a win
+    if rate is None:
+        print("Could not get today's exchange rate, the round is cancelled.")
+        return False
+    # Random whole USD amount, 1 to 100 included
+    usd_amount = random.randint(1, 100)
+    # Unpack the two returned bounds into two variables
+    lower, upper = get_money_interval(usd_amount, rate, difficulty)
+    # Ask until the player gives a valid guess (already rounded to agorot)
+    guess = get_guess_from_user(usd_amount)
+    # Reveal the winning range only after the guess
+    print(f"Winning answers were {lower} to {upper} ILS.")
+    # True if the guess is inside the range, endpoints included
+    return lower <= guess <= upper
