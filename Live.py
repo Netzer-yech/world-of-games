@@ -39,10 +39,10 @@ def get_number(prompt, low, high):
 
 # Show the game menu
 def load_game():
-    print("\nPlease choose a game to play:\n")
+    print("Please choose a game to play:")
     print("1. Memory Game - a sequence of numbers will appear for 0.7 seconds, repeat it back")
     print("2. Guess Game - guess the secret number the computer chose")
-    print("3. Currency Roulette - guess the ILS value of a random USD amount\n")
+    print("3. Currency Roulette - guess the ILS value of a random USD amount")
     # Ask for the game number, check with range 1-3
     game = get_number("Enter game number (1-3): ", 1, 3)
     # Ask for the difficulty, same check with range 1-5
