@@ -5,7 +5,7 @@ import pytest
 from GuessGame import compare_results, generate_number
 
 
-def test_compare_results_same_number_return_true():
+def test_compare_results_same_number_returns_true():
     # the guess match to the secret number, player wins
     assert compare_results(3, 3) is True
 
