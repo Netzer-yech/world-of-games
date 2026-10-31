@@ -54,7 +54,7 @@ def load_game():
         result = GuessGame.play(difficulty)
     else:
         result = CurrencyRouletteGame.play(difficulty)
-    # Same result message for every game
+    # Same result message for every game, same as "if result == True"
     if result:
         print("You won!")
     else:
