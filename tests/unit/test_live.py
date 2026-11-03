@@ -35,6 +35,8 @@ def test_get_number_text_answer_asks_again(monkeypatch, capsys):
 
 
 # One run per answer just outside the 1-3 range
+# bad_answer is the parameter name, the list of values is the second argument, and the ids are just for human-readable test names.
+# then bad_answer injected to the test function as a parameter, and the test runs once for each value.
 @pytest.mark.parametrize("bad_answer", ["0", "4"], ids=["below range", "above range"])
 def test_get_number_out_of_range_asks_again(monkeypatch, capsys, bad_answer):
     # The player's answers, in order: one outside the range, then a valid number
