@@ -1,5 +1,7 @@
 # Unit tests for Live.py
 
+import pytest
+
 from Live import get_number
 
 
@@ -30,3 +32,20 @@ def test_get_number_text_answer_asks_again(monkeypatch, capsys):
     # Assert: exactly this message was printed, and nothing else
     # The \n at the end is the newline print() adds.
     assert captured.out == "'abc' is not a whole number, please try again.\n"
+
+
+# One run per answer just outside the 1-3 range
+@pytest.mark.parametrize("bad_answer", ["0", "4"], ids=["below range", "above range"])
+def test_get_number_out_of_range_asks_again(monkeypatch, capsys, bad_answer):
+    # The player's answers, in order: one outside the range, then a valid number
+    answers = iter([bad_answer, "2"])
+    # Each input() call takes the next answer from the list
+    monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
+    # Act: the function rejects the bad answer, asks again, then accepts "2"
+    result = get_number("Enter game number (1-3): ", 1, 3)
+    # Assert: the second answer was returned
+    assert result == 2
+    # Read everything the function printed
+    captured = capsys.readouterr()
+    # Assert: exactly the range message was printed (print adds the \n)
+    assert captured.out == "Please choose a number from 1 to 3.\n"
