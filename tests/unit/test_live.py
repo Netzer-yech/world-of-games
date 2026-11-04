@@ -18,26 +18,28 @@ def test_get_number_valid_answer_returns_number(monkeypatch):
 
 # capsys is a pytest feature (fixture) that lets us capture what the function printed, for testing.
 # it is possible to use several fixtures tools in the same test function, as long as they are listed in the parameters, separated by commas.
-def test_get_number_text_answer_asks_again(monkeypatch, capsys):
-    # The player's answers, in order: first text, then a valid number
-    answers = iter(["abc", "2"])
+# One run per answer that is not a whole number
+# Here we testing different type of error message
+@pytest.mark.parametrize("bad_answer", ["abc", "2.5", "", " "], ids=["text", "decimal", "empty", "space"])
+def test_get_number_not_whole_number_asks_again(monkeypatch, capsys, bad_answer):
+    # The player's answers, in order: one that is not a whole number, then a valid number
+    answers = iter([bad_answer, "2"])
     # Each input() call takes the next answer from the list
     monkeypatch.setattr("builtins.input", lambda prompt: next(answers))
-    # Act: the function rejects "abc", asks again, then accepts "2"
+    # Act: the function rejects the bad answer, asks again, then accepts "2"
     result = get_number("Enter game number (1-3): ", 1, 3)
     # Assert: the second answer was returned
     assert result == 2
-    # Read everything the function printed during the test
+    # Read everything the function printed
     captured = capsys.readouterr()
-    # Assert: exactly this message was printed, and nothing else
-    # The \n at the end is the newline print() adds.
-    assert captured.out == "'abc' is not a whole number, please try again.\n"
+    # Assert: the message quotes this run's bad answer (print adds the \n)
+    assert captured.out == f"'{bad_answer}' is not a whole number, please try again.\n"
 
 
 # One run per answer just outside the 1-3 range
 # bad_answer is the parameter name, the list of values is the second argument, and the ids are just for human-readable test names.
 # then bad_answer injected to the test function as a parameter, and the test runs once for each value.
-@pytest.mark.parametrize("bad_answer", ["0", "4"], ids=["below range", "above range"])
+@pytest.mark.parametrize("bad_answer", ["0", "4", "-1"], ids=["below range", "above range", "negative"])
 def test_get_number_out_of_range_asks_again(monkeypatch, capsys, bad_answer):
     # The player's answers, in order: one outside the range, then a valid number
     answers = iter([bad_answer, "2"])
@@ -51,3 +53,5 @@ def test_get_number_out_of_range_asks_again(monkeypatch, capsys, bad_answer):
     captured = capsys.readouterr()
     # Assert: exactly the range message was printed (print adds the \n)
     assert captured.out == "Please choose a number from 1 to 3.\n"
+
+
