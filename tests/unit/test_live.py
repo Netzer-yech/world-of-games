@@ -6,13 +6,36 @@ from Live import get_number
 
 
 # monkeypatch is a pytest feature (fixture) that lets us replace functions with fake ones, for testing.
-def test_get_number_valid_answer_returns_number(monkeypatch):
-    # Arrange: the fake input answers "2", as if the player typed 2
-    monkeypatch.setattr("builtins.input", lambda prompt: "2")
-    # Act: call the real function with the game menu's range
-    result = get_number("Enter game number (1-3): ", 1, 3)
-    # Assert: it returns the number 2, as an int and not the text "2"
-    assert result == 2
+# Each row: the prompt, the range, the player's answer, and the number expected back
+@pytest.mark.parametrize(
+    "prompt, low, high, answer, expected",
+    [
+        ("Enter game number (1-3): ", 1, 3, "1", 1),
+        ("Enter game number (1-3): ", 1, 3, "2", 2),
+        ("Enter game number (1-3): ", 1, 3, "3", 3),
+        ("Please choose game difficulty from 1 to 5: ", 1, 5, "1", 1),
+        ("Please choose game difficulty from 1 to 5: ", 1, 5, "2", 2),
+        ("Please choose game difficulty from 1 to 5: ", 1, 5, "3", 3),
+        ("Please choose game difficulty from 1 to 5: ", 1, 5, "4", 4),
+        ("Please choose game difficulty from 1 to 5: ", 1, 5, "5", 5),
+        ("Enter game number (1-3): ", 1, 3, " 2 ", 2),
+    ],
+    ids=[
+        "game 1", "game 2", "game 3",
+        "difficulty 1", "difficulty 2", "difficulty 3", "difficulty 4", "difficulty 5",
+        "spaces around number",
+    ],
+)
+def test_get_number_valid_answer_is_accepted(monkeypatch, prompt, low, high, answer, expected):
+    # The player's answers, in order: just one valid answer
+    answers = iter([answer])
+    # The player answers once, with a valid value
+    monkeypatch.setattr("builtins.input", lambda text: next(answers))
+    # Act: call the function with this row's prompt and range
+    result = get_number(prompt, low, high)
+    # Assert: the answer is accepted on the first try and returned
+    assert result == expected
+    # Assert: it is an int, so load_game can compare it with 1, 2 and 3
     assert isinstance(result, int)
 
 
