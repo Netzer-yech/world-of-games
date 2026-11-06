@@ -74,3 +74,53 @@ def test_get_guess_from_user_valid_guess_is_accepted(monkeypatch, difficulty, an
     assert isinstance(result, int)
     # Assert: the game asked exactly once, with the range of this difficulty
     assert prompts == [f"Guess a number from 1 to {difficulty}: "]
+
+
+# One run per guess that is not a whole number
+@pytest.mark.parametrize("bad_answer", ["abc", "2.5", "", " "], ids=["text", "decimal", "empty", "space"])
+def test_get_guess_from_user_not_whole_number_asks_again(monkeypatch, capsys, bad_answer):
+    # The player's answers, in order: one that is not a whole number, then a valid guess
+    answers = iter([bad_answer, "2"])
+      # Each input() call takes the next answer from the list
+    monkeypatch.setattr("builtins.input", lambda text: next(answers))
+    # Act: the game rejects the bad answer, asks again, then accepts "2"
+    result = get_guess_from_user(3)
+    # Assert: the second answer was returned
+    assert result == 2
+    # Read everything the game printed
+    captured = capsys.readouterr()
+    # Assert: the message quotes this run's bad answer (print adds the \n)
+    assert captured.out == f"'{bad_answer}' is not a whole number, please try again.\n"
+
+
+# Each row: the difficulty, and a guess just outside its range
+@pytest.mark.parametrize(
+    "difficulty, bad_answer",
+    [
+        (1, "0"), (1, "2"),
+        (2, "0"), (2, "3"),
+        (3, "0"), (3, "4"),
+        (4, "0"), (4, "5"),
+        (5, "0"), (5, "6"),
+    ],
+    ids=[
+        "difficulty 1 below", "difficulty 1 above",
+        "difficulty 2 below", "difficulty 2 above",
+        "difficulty 3 below", "difficulty 3 above",
+        "difficulty 4 below", "difficulty 4 above",
+        "difficulty 5 below", "difficulty 5 above",
+    ],
+)
+def test_get_guess_from_user_out_of_range_asks_again(monkeypatch, capsys, difficulty, bad_answer):
+    # The player's answers, in order: one outside the range, then "1", valid at every difficulty
+    answers = iter([bad_answer, "1"])
+    # Each input() call takes the next answer from the list
+    monkeypatch.setattr("builtins.input", lambda text: next(answers))
+    # Act: the game rejects the bad guess, asks again, then accepts "1"
+    result = get_guess_from_user(difficulty)
+    # Assert: the second answer was returned
+    assert result == 1
+    # Read everything the game printed
+    captured = capsys.readouterr()
+    # Assert: the message names this difficulty's range (print adds the \n)
+    assert captured.out == f"Please choose a number from 1 to {difficulty}.\n"
