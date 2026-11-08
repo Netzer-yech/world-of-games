@@ -82,6 +82,7 @@ def test_get_guess_from_user_not_whole_number_asks_again(monkeypatch, capsys, ba
     # The player's answers, in order: one that is not a whole number, then a valid guess
     answers = iter([bad_answer, "2"])
       # Each input() call takes the next answer from the list
+      # lambda is a nameless one-line function that ignores the prompt and returns the next answer
     monkeypatch.setattr("builtins.input", lambda text: next(answers))
     # Act: the game rejects the bad answer, asks again, then accepts "2"
     result = get_guess_from_user(3)
@@ -115,6 +116,7 @@ def test_get_guess_from_user_out_of_range_asks_again(monkeypatch, capsys, diffic
     # The player's answers, in order: one outside the range, then "1", valid at every difficulty
     answers = iter([bad_answer, "1"])
     # Each input() call takes the next answer from the list
+    # lambda is a nameless one-line function that ignores the prompt and returns the next answer
     monkeypatch.setattr("builtins.input", lambda text: next(answers))
     # Act: the game rejects the bad guess, asks again, then accepts "1"
     result = get_guess_from_user(difficulty)
