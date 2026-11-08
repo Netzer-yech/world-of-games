@@ -44,7 +44,7 @@ def get_list_from_user(difficulty):
     while True:
         # Explain the format, then read the whole line as text
         answer = input(f"Enter the {difficulty} numbers you saw, separated by spaces: ")
-        # split() cuts the text at the spaces: "12 7 12" -> ["12", "7", "12"]
+        # split() cuts the text at the spaces and return a list: "12 7 12" -> ["12", "7", "12"]
         parts = answer.split()
         # len() counts the items. Wrong count -> explain and ask again
         if len(parts) != difficulty:
