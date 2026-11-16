@@ -1,0 +1,8 @@
+# Test and build tools, not needed to play the game
+# Install with: pip install -r requirements-dev.txt
+
+# Also install everything the game itself needs from requirements.txt 
+-r requirements.txt
+
+# Test runner: finds and runs the tests in tests/
+pytest==9.2.0

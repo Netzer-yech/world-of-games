@@ -6,11 +6,11 @@ Later phases add a score system, a web service, Docker, a Jenkins CI/CD pipeline
 
 ## Status
 
-Last updated: 29.10.26
+Last updated: 16.11.26
 
-- **Part 1 (Foundations):** done. All 14 tasks are complete and merged into `main`.
-- **Automated tests:** in progress on the `feature/test-suite` branch, using pytest.
-- **Next:** Part 2, waiting for the brief.
+- **Part 1 (Foundations):** done and reviewed by the instructor. Review fixes are next.
+- **Automated tests:** 71 unit tests with pytest, all passing. More test types are planned.
+- **Next:** Part 1 review fixes, then moving the app files into their own folder, then Part 2.
 
 
 ## Repo structure
@@ -24,7 +24,11 @@ world-of-games/
 ├── CurrencyRouletteGame.py  # Currency Roulette: guess the ILS value of a random USD amount (live API)
 ├── requirements.txt         # Packages the game needs to run (requests, pinned)
 ├── .gitignore               # Files git must not track (venv, caches, secrets)
-└── README.md                # This file
+├── README.md                # This file
+├── requirements-dev.txt     # Test tools (pytest), plus everything in requirements.txt
+├── pytest.ini               # pytest settings: where the tests are, and the import path
+└── tests/
+    └── unit/                # Unit tests, one file per game module
 ```
 
 
@@ -35,6 +39,8 @@ Requirements: Python 3 (developed with 3.14) on Linux or WSL, and internet acces
 Run these from the repo root. Create the venv once, and activate it in every new terminal.
 
 ```bash
+git clone https://github.com/Netzer-yech/world-of-games.git
+cd world-of-games
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -74,6 +80,19 @@ If the currency API fails, the Currency Roulette round is cancelled and counts a
 - Money uses `Decimal`, rounded to 2 places (`ROUND_HALF_UP`). The winning interval includes both edges.
 - The currency rate comes from `https://open.er-api.com/v6/latest/USD` (free, no key), with a 5-second timeout. Any failure returns `None`, and the round is cancelled.
 - Packages are installed in a venv, never with `sudo pip`. Versions are pinned in `requirements.txt`.
+
+## Tests
+
+The unit tests use pytest and run offline: player input, randomness and the currency API are replaced with fakes.
+
+First create and activate the venv as shown in How to run. Then, from the repo root:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+Each file in `tests/unit/` tests one game module, for example `test_guess_game.py` tests `GuessGame.py`.
 
 ### For AI assistants
 

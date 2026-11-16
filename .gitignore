@@ -11,3 +11,6 @@ __pycache__/
 
 # Local secrets (API keys); never push them to GitHub
 .env
+
+# pytest's cache of the last run, local only
+.pytest_cache/
