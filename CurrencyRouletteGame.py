@@ -8,6 +8,9 @@ import random
 # HTTP package for calling the currency API (from requirements.txt)
 import requests
 
+
+# The highest guess accepted: far above any real answer, small enough to round safely
+MAX_GUESS = Decimal("1000000")
 # The API address; uppercase = a constant that never changes
 API_URL = "https://open.er-api.com/v6/latest/USD"
 
@@ -65,12 +68,11 @@ def get_guess_from_user(usd_amount):
         except InvalidOperation:
             print("Please enter a number, like 145 or 145.50.")
             continue
-        # A real number (not NaN/Infinity) and not negative
-        if guess.is_finite() and guess >= 0:
-             # Round to agorot, the same rounding as the correct answer
+        # Real, not negative, and not too big to round (1e100 crashed quantize)
+        if guess.is_finite() and 0 <= guess <= MAX_GUESS:
+            # Same rounding as the correct answer, so the comparison is fair
             return guess.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        # Negative or not a real number: explain, then ask again
-        print("Please enter a number of 0 or more, like 145 or 145.50.")
+        print(f"Please enter a number from 0 to {MAX_GUESS}, like 145 or 145.50.")
 
 
 # Run one round of Currency Roulette: True = win, False = loss or cancelled
