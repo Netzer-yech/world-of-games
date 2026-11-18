@@ -1,5 +1,7 @@
 # Exact decimal math for money, its input error, and the rounding rule
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+# isfinite() rejects NaN and infinity in the API rate
+import math
 # Python's built-in module for random numbers
 import random
 
@@ -10,25 +12,33 @@ import requests
 API_URL = "https://open.er-api.com/v6/latest/USD"
 
 
-# Get today's USD to ILS rate from the API, or None if anything fails
+# Get today's USD to ILS rate, or None if the API answer can't be used
 def get_usd_to_ils_rate():
-    # Anything that fails inside try jumps to except instead of crashing
+    # try holds only what can fail unpredictably: the network and the JSON parsing
     try:
-        # Send the GET request; give up if there's no answer within 5 seconds
+        # timeout=5 so a slow API can't freeze the game
         response = requests.get(API_URL, timeout=5)
-        # Turn an HTTP error status (like 404 or 500) into an exception
+        # A 404 or 500 page is not a rate
         response.raise_for_status()
-        # Turn the JSON text into a Python dictionary
         data = response.json()
-        # The API reports its own status; anything but "success" = no rate
-        if data["result"] != "success":
-            return None
-        # Take the ILS value from inside the "rates" section
-        return data["rates"]["ILS"]
-    # Network error, timeout, bad HTTP status, invalid JSON, or a missing key
-    except (requests.RequestException, ValueError, KeyError):
+    # Network error, timeout, bad HTTP status, or a body that isn't JSON
+    except (requests.RequestException, ValueError):
         return None
-
+    # Valid JSON can be null, a list or a number; only an object has our fields
+    if not isinstance(data, dict) or data.get("result") != "success":
+        return None
+    # "rates" may be missing or null; .get() gives None instead of a KeyError
+    rates = data.get("rates")
+    if not isinstance(rates, dict):
+        return None
+    rate = rates.get("ILS")
+    # bool is a kind of int in Python, so true would pass as a rate of 1
+    if isinstance(rate, bool) or not isinstance(rate, (int, float)):
+        return None
+    # The teacher's rule: a real, positive number (no NaN, infinity, 0 or below)
+    if not math.isfinite(rate) or rate <= 0:
+        return None
+    return rate
 
 # Return the lowest and highest winning answers, in ILS, rounded to 2 places
 def get_money_interval(usd_amount, rate, difficulty):
