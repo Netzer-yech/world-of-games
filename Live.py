@@ -37,7 +37,7 @@ def get_number(prompt, low, high):
         print(f"Please choose a number from {low} to {high}.")
 
 
-# Show the game menu
+# Show the menu, run the chosen game, and print its result
 def load_game():
     print("Please choose a game to play:")
     print("1. Memory Game - a sequence of numbers will appear for 0.7 seconds, repeat it back")
@@ -48,15 +48,20 @@ def load_game():
     game = get_number("Enter game number (1-3): ", 1, 3)
     # Ask for the difficulty, same check with range 1-5
     difficulty = get_number("Please choose game difficulty from 1 to 5: ", 1, 5)
-    # Start the chosen game with the chosen difficulty
-    if game == 1:
-        result = MemoryGame.play(difficulty)
-    elif game == 2:
-        result = GuessGame.play(difficulty)
-    else:
-        result = CurrencyRouletteGame.play(difficulty)
+    # A game raises RoundCancelledError when the round can't be played
+    try:
+        if game == 1:
+            result = MemoryGame.play(difficulty)
+        elif game == 2:
+            result = GuessGame.play(difficulty)
+        else:
+            result = CurrencyRouletteGame.play(difficulty)
+    # Cancelled is neither a win nor a loss: show why, and skip the result message
+    except CurrencyRouletteGame.RoundCancelledError as error:
+        print(error)
+        return
 
-    # Same result message for every game, same as "if result == True"
+    # One result message for every game
     if result:
         print("You won!")
     else:

@@ -11,6 +11,9 @@ import requests
 
 # The highest guess accepted: far above any real answer, small enough to round safely
 MAX_GUESS = Decimal("1000000")
+# Raised when a round can't be played (no usable rate); it is not a loss
+class RoundCancelledError(Exception):
+    pass
 # The API address; uppercase = a constant that never changes
 API_URL = "https://open.er-api.com/v6/latest/USD"
 
@@ -75,16 +78,15 @@ def get_guess_from_user(usd_amount):
         print(f"Please enter a number from 0 to {MAX_GUESS}, like 145 or 145.50.")
 
 
-# Run one round of Currency Roulette: True = win, False = loss or cancelled
+# Run one round: True = win, False = loss; raises RoundCancelledError if it can't be played
 def play(difficulty):
     # Show which game started
     print("Currency Roulette: guess the ILS value of a USD amount!")
     # Get the rate once; the whole round uses this same rate
     rate = get_usd_to_ils_rate()
-    # No rate = cancel the round before asking anything, never a win
+    # A cancelled round isn't a loss, so raise instead of returning False
     if rate is None:
-        print("Could not get today's exchange rate, the round is cancelled.")
-        return False
+        raise RoundCancelledError("Could not get today's exchange rate, the round is cancelled.")
     # Random whole USD amount, 1 to 100 included
     usd_amount = random.randint(1, 100)
     # Unpack the two returned bounds into two variables
