@@ -9,7 +9,16 @@ import MemoryGame
 def welcome(name):                                                        
     return f"\nHello {name} and welcome to the World of Games (WoG).\nHere you can find many cool games to play."
 
+# Ask for the player's name until it isn't empty
+def get_name():
+    while True:
+        # strip() so "  Netzer " greets as "Netzer", and "   " counts as empty
+        name = input("Please enter your name: ").strip()
+        if name:
+            return name
+        print("Please enter a name.")
 
+        
 # Ask the player for a number, and keep asking until it is valid.
 # prompt = the question text, low/high = smallest and biggest allowed number.
 def get_number(prompt, low, high):
