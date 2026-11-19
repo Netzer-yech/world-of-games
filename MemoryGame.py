@@ -6,14 +6,19 @@ import random
 import time
 
 
-# Make a list of difficulty random numbers, each from 1 to 101
+# The sequence's number range; generating and checking both use it, so they can't disagree
+LOWEST_NUMBER = 1
+HIGHEST_NUMBER = 101
+
+
+# Make a list of difficulty random numbers inside the allowed range
 def generate_sequence(difficulty):
     # Start with an empty list
     sequence = []
     # Repeat the indented line difficulty times
     for _ in range(difficulty):
         # Add one random number (1 to 101) to the end of the list
-        sequence.append(random.randint(1, 101))
+        sequence.append(random.randint(LOWEST_NUMBER, HIGHEST_NUMBER))
     # Give the full list back
     return sequence
 
@@ -45,7 +50,6 @@ def get_list_from_user(difficulty):
         # Explain the format, then read the whole line as text
         answer = input(f"Enter the {difficulty} numbers you saw, separated by spaces: ")
         # split() cuts the text at the spaces and return a list: "12 7 12" -> ["12", "7", "12"]
-
         parts = answer.split()
         # len() counts the items. Wrong count -> explain and ask again
         if len(parts) != difficulty:
@@ -63,7 +67,10 @@ def get_list_from_user(difficulty):
         except ValueError:
             print("Please use whole numbers only, separated by spaces.")
             continue
-        # Count and values are valid: give the list back
+        # The sequence only uses this range, so a number outside it is a typo, not a wrong answer
+        if not all(LOWEST_NUMBER <= number <= HIGHEST_NUMBER for number in numbers):
+            print(f"Please use numbers from {LOWEST_NUMBER} to {HIGHEST_NUMBER} only.")
+            continue
         return numbers
 
 
