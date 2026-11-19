@@ -54,8 +54,9 @@ def get_money_interval(usd_amount, rate, difficulty):
     t = (Decimal(usd_amount) * exact_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     # Allowed distance from t: difficulty 1 -> 4, difficulty 5 -> 0
     margin = Decimal(5 - difficulty)
-    # Return both bounds together
-    return t - margin, t + margin
+    # Money can't be negative: a small amount at a low difficulty would go below 0
+    lower = max(Decimal("0.00"), t - margin)
+    return lower, t + margin
 
 
 # Ask until the player enters a number of 0 or more, like 145 or 145.50
