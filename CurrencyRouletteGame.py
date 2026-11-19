@@ -1,21 +1,20 @@
-# Exact decimal math for money, its input error, and the rounding rule
+# Decimal for exact money math; ROUND_HALF_UP rounds .005 up, like prices do
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-# isfinite() rejects NaN and infinity in the API rate
 import math
-# Python's built-in module for random numbers
 import random
 
-# HTTP package for calling the currency API (from requirements.txt)
+# Third-party, pinned in requirements.txt; built-in modules stay above it
 import requests
 
 
+API_URL = "https://open.er-api.com/v6/latest/USD"
 # The highest guess accepted: far above any real answer, small enough to round safely
 MAX_GUESS = Decimal("1000000")
+
+
 # Raised when a round can't be played (no usable rate); it is not a loss
 class RoundCancelledError(Exception):
     pass
-# The API address; uppercase = a constant that never changes
-API_URL = "https://open.er-api.com/v6/latest/USD"
 
 
 # Get today's USD to ILS rate, or None if the API answer can't be used
