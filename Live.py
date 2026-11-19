@@ -1,62 +1,64 @@
-
 # The three game modules; each one has play(difficulty)
 import CurrencyRouletteGame
 import GuessGame
 import MemoryGame
 
 
-# welcome function that accept user input and return welcome text
-def welcome(name):                                                        
+# Return the greeting instead of printing it, so the caller decides when to show it
+def welcome(name):
     return f"\nHello {name} and welcome to the World of Games (WoG).\nHere you can find many cool games to play."
 
 
-# Ask the player for a number, and keep asking until it is valid.
-# prompt = the question text, low/high = smallest and biggest allowed number.
-def get_number(prompt, low, high):
-    # Repeat forever. The only exit is "return" below, reached with valid input.
+# Ask for the player's name until it isn't empty
+def get_name():
     while True:
-        # Show the question and wait for Enter. The answer is always text (a string).
+        # strip() so "  Netzer " greets as "Netzer", and "   " counts as empty
+        name = input("Please enter your name: ").strip()
+        if name:
+            return name
+        print("Please enter a name.")
+
+
+# Ask until the answer is a whole number from low to high; shared by the game and difficulty menus
+def get_number(prompt, low, high):
+    while True:
         answer = input(prompt)
-        # "try" = attempt the next line. If it fails, jump to "except" instead of crashing.
         try:
-            # Turn the text into a whole number: "3" -> 3.
-            # Fails on "", "abc", "2.5" with an error called ValueError.
             number = int(answer)
-        # Runs only if int() failed with ValueError.
+        # A typo isn't a choice: explain and ask again instead of crashing
         except ValueError:
-            # Tell the player what was wrong. {answer} inserts what they typed.
             print(f"'{answer}' is not a whole number, please try again.")
-            # Skip the rest of the loop and go back to the top: ask again.
             continue
-        # We get here only with a whole number. Check that it's inside the range.
-        # Same as: low <= number AND number <= high. The endpoints are allowed.
+        # Both ends are valid choices
         if low <= number <= high:
-            # Valid: send the number back to the caller, and leave the loop and the function.
             return number
-        # Whole number but out of range: explain, then the loop asks again.
         print(f"Please choose a number from {low} to {high}.")
 
 
-# Show the game menu
+# Show the menu, run the chosen game, and print its result
 def load_game():
     print("Please choose a game to play:")
     print("1. Memory Game - a sequence of numbers will appear for 0.7 seconds, repeat it back")
     print("2. Guess Game - guess the secret number the computer chose")
     print("3. Currency Roulette - guess the ILS value of a random USD amount")
 
-    # Ask for the game number, check with range 1-3
+    # get_number asks again until the answer is in range, so both values are always valid
     game = get_number("Enter game number (1-3): ", 1, 3)
-    # Ask for the difficulty, same check with range 1-5
     difficulty = get_number("Please choose game difficulty from 1 to 5: ", 1, 5)
-    # Start the chosen game with the chosen difficulty
-    if game == 1:
-        result = MemoryGame.play(difficulty)
-    elif game == 2:
-        result = GuessGame.play(difficulty)
-    else:
-        result = CurrencyRouletteGame.play(difficulty)
+    # A game raises RoundCancelledError when the round can't be played
+    try:
+        if game == 1:
+            result = MemoryGame.play(difficulty)
+        elif game == 2:
+            result = GuessGame.play(difficulty)
+        else:
+            result = CurrencyRouletteGame.play(difficulty)
+    # Cancelled is neither a win nor a loss: show why, and skip the result message
+    except CurrencyRouletteGame.RoundCancelledError as error:
+        print(error)
+        return
 
-    # Same result message for every game, same as "if result == True"
+    # One result message for every game
     if result:
         print("You won!")
     else:

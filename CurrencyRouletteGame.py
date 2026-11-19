@@ -1,34 +1,49 @@
-# Exact decimal math for money, its input error, and the rounding rule
+# Decimal for exact money math; ROUND_HALF_UP rounds .005 up, like prices do
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-# Python's built-in module for random numbers
+import math
 import random
 
-# HTTP package for calling the currency API (from requirements.txt)
+# Third-party, pinned in requirements.txt; built-in modules stay above it
 import requests
 
-# The API address; uppercase = a constant that never changes
+
 API_URL = "https://open.er-api.com/v6/latest/USD"
+# The highest guess accepted: far above any real answer, small enough to round safely
+MAX_GUESS = Decimal("1000000")
 
 
-# Get today's USD to ILS rate from the API, or None if anything fails
+# Raised when a round can't be played (no usable rate); it is not a loss
+class RoundCancelledError(Exception):
+    pass
+
+
+# Get today's USD to ILS rate, or None if the API answer can't be used
 def get_usd_to_ils_rate():
-    # Anything that fails inside try jumps to except instead of crashing
+    # try holds only what can fail unpredictably: the network and the JSON parsing
     try:
-        # Send the GET request; give up if there's no answer within 5 seconds
+        # timeout=5 so a slow API can't freeze the game
         response = requests.get(API_URL, timeout=5)
-        # Turn an HTTP error status (like 404 or 500) into an exception
+        # A 404 or 500 page is not a rate
         response.raise_for_status()
-        # Turn the JSON text into a Python dictionary
         data = response.json()
-        # The API reports its own status; anything but "success" = no rate
-        if data["result"] != "success":
-            return None
-        # Take the ILS value from inside the "rates" section
-        return data["rates"]["ILS"]
-    # Network error, timeout, bad HTTP status, invalid JSON, or a missing key
-    except (requests.RequestException, ValueError, KeyError):
+    # Network error, timeout, bad HTTP status, or a body that isn't JSON
+    except (requests.RequestException, ValueError):
         return None
-
+    # Valid JSON can be null, a list or a number; only an object has our fields
+    if not isinstance(data, dict) or data.get("result") != "success":
+        return None
+    # "rates" may be missing or null; .get() gives None instead of a KeyError
+    rates = data.get("rates")
+    if not isinstance(rates, dict):
+        return None
+    rate = rates.get("ILS")
+    # bool is a kind of int in Python, so true would pass as a rate of 1
+    if isinstance(rate, bool) or not isinstance(rate, (int, float)):
+        return None
+    # The teacher's rule: a real, positive number (no NaN, infinity, 0 or below)
+    if not math.isfinite(rate) or rate <= 0:
+        return None
+    return rate
 
 # Return the lowest and highest winning answers, in ILS, rounded to 2 places
 def get_money_interval(usd_amount, rate, difficulty):
@@ -38,8 +53,9 @@ def get_money_interval(usd_amount, rate, difficulty):
     t = (Decimal(usd_amount) * exact_rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     # Allowed distance from t: difficulty 1 -> 4, difficulty 5 -> 0
     margin = Decimal(5 - difficulty)
-    # Return both bounds together
-    return t - margin, t + margin
+    # Money can't be negative: a small amount at a low difficulty would go below 0
+    lower = max(Decimal("0.00"), t - margin)
+    return lower, t + margin
 
 
 # Ask until the player enters a number of 0 or more, like 145 or 145.50
@@ -55,24 +71,22 @@ def get_guess_from_user(usd_amount):
         except InvalidOperation:
             print("Please enter a number, like 145 or 145.50.")
             continue
-        # A real number (not NaN/Infinity) and not negative
-        if guess.is_finite() and guess >= 0:
-             # Round to agorot, the same rounding as the correct answer
+        # Real, not negative, and not too big to round (1e100 crashed quantize)
+        if guess.is_finite() and 0 <= guess <= MAX_GUESS:
+            # Same rounding as the correct answer, so the comparison is fair
             return guess.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-        # Negative or not a real number: explain, then ask again
-        print("Please enter a number of 0 or more, like 145 or 145.50.")
+        print(f"Please enter a number from 0 to {MAX_GUESS}, like 145 or 145.50.")
 
 
-# Run one round of Currency Roulette: True = win, False = loss or cancelled
+# Run one round: True = win, False = loss; raises RoundCancelledError if it can't be played
 def play(difficulty):
     # Show which game started
     print("Currency Roulette: guess the ILS value of a USD amount!")
     # Get the rate once; the whole round uses this same rate
     rate = get_usd_to_ils_rate()
-    # No rate = cancel the round before asking anything, never a win
+    # A cancelled round isn't a loss, so raise instead of returning False
     if rate is None:
-        print("Could not get today's exchange rate, the round is cancelled.")
-        return False
+        raise RoundCancelledError("Could not get today's exchange rate, the round is cancelled.")
     # Random whole USD amount, 1 to 100 included
     usd_amount = random.randint(1, 100)
     # Unpack the two returned bounds into two variables

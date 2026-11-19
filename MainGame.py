@@ -1,14 +1,14 @@
-# The entry point of World Of Games
-from Live import welcome, load_game
+# The entry point of World of Games
+from Live import welcome, load_game, get_name
 
-# the statement run only if this file is executed. for other imports of this file the if statement is skipped
+
+# Run only when this file is started directly, not when it's imported (e.g. by tests)
 if __name__ == "__main__":
-    
-# input function write a message to the console and stored user input in the mane variable
-    name = input("Please enter your name: ")   # input function write a message to the console and stored user input in the mane variable
-
-# printing the welcome message with the name variable
-    print(welcome(name))                       
-
-# execute load game function within the if statement
-    load_game()
+    # Ctrl+C or Ctrl+D anywhere in the game travels up to here
+    try:
+        name = get_name()
+        print(welcome(name))
+        load_game()
+    # The player chose to quit: say goodbye instead of showing a traceback
+    except (KeyboardInterrupt, EOFError):
+        print("\nGoodbye!")
