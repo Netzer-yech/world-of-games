@@ -1,0 +1,3 @@
+# Line endings for every clone (any OS, Jenkins, Docker), not only this PC's editor
+# text=auto: Git decides which files are text; eol=lf: store and check them out with LF
+* text=auto eol=lf
