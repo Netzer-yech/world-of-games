@@ -1,6 +1,8 @@
-import os
 import random
 import time
+
+# Project module after built-in ones (PEP 8 import order)
+from Utils import screen_cleaner
 
 
 # The sequence's number range; generating and checking both use it, so they can't disagree
@@ -16,21 +18,12 @@ def generate_sequence(difficulty):
     return sequence
 
 
-# Clear the terminal screen (moves to Utils.py in Part 2)
-def clear_screen():
-    # Windows ("nt") and Linux/macOS use different commands
-    if os.name == "nt":
-        os.system("cls")
-    else:
-        os.system("clear")
-
-
 # Show the sequence for 0.7 seconds (the brief's rule), then hide it
 def display_sequence(sequence):
     print(f"Remember this sequence: {sequence}")
     time.sleep(0.7)
     # Wipe the screen so the numbers can't be read back
-    clear_screen()
+    screen_cleaner()
 
 
 # Ask until the player enters exactly difficulty whole numbers from the allowed range
