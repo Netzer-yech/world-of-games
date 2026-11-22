@@ -14,3 +14,9 @@ __pycache__/
 
 # pytest's cache of the last run, local only
 .pytest_cache/
+
+# The real score, created by the game on the first win: data, not code
+/Scores.txt
+
+# A leftover copy if a save was interrupted
+/Scores.txt.tmp
