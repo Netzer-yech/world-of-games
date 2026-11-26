@@ -2,3 +2,7 @@
 # HTTP client for the currency API; == pins the exact version
 
 requests==2.34.2
+
+# Web framework for the score server (MainScores.py)
+flask==3.1.3
+
