@@ -2,6 +2,9 @@
 import CurrencyRouletteGame
 import GuessGame
 import MemoryGame
+# A win's points are saved through the scoring layer; BAD_RETURN_CODE tells a failed save apart
+import Score
+import Utils
 
 
 # Return the greeting instead of printing it, so the caller decides when to show it
@@ -61,5 +64,12 @@ def load_game():
     # One result message for every game
     if result:
         print("You won!")
+        # Only a win earns points: once, at this round's difficulty (the brief's task 4)
+        new_score = Score.add_score(difficulty)
+        # add_score already printed why it failed; a failed save must never look like a success
+        if new_score == Utils.BAD_RETURN_CODE:
+            print("Your points were not saved.")
+        else:
+            print(f"Your score is now {new_score}.")
     else:
         print("You lost, better luck next time.")
