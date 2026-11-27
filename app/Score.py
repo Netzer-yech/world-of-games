@@ -2,7 +2,7 @@
 # so Part 3 can swap the file for a database without touching the games or the web server
 import os
 
-from Utils import SCORES_FILE_NAME, BAD_RETURN_CODE
+from Utils import SCORES_FILE_NAME, SCORES_FILE_PATH, BAD_RETURN_CODE
 
 
 # Raised when the score can't be read or saved; its message is shown to the player or on the web page
@@ -15,7 +15,7 @@ class ScoreError(Exception):
 def read_score(missing_ok=True):
     try:
         # Explicit encoding: the default differs between Windows and Linux
-        with open(SCORES_FILE_NAME, encoding="utf-8") as file:
+        with open(SCORES_FILE_PATH, encoding="utf-8") as file:
             text = file.read()
     # No file yet: the console's first game ("start from zero"); for the web it means missing data
     except FileNotFoundError:
@@ -39,17 +39,17 @@ def read_score(missing_ok=True):
 # Save the score safely; raise ScoreError if it can't be saved. Internal: only add_score writes
 def _write_score(score):
     # Write a copy first, then swap it in: a crash while writing can't empty the real file
-    temp_file_name = SCORES_FILE_NAME + ".tmp"
+    temp_file_path = SCORES_FILE_PATH + ".tmp"
     try:
-        with open(temp_file_name, "w", encoding="utf-8") as file:
+        with open(temp_file_path, "w", encoding="utf-8") as file:
             file.write(f"{score}\n")
         # One atomic step: anyone reading sees the old total or the new one, never half a file
-        os.replace(temp_file_name, SCORES_FILE_NAME)
+        os.replace(temp_file_path, SCORES_FILE_PATH)
     # No permission, a full disk: the real file still holds the old total, so nothing is lost
     except OSError as error:
         # Don't leave a half-written copy behind; it may not exist if open() itself failed
         try:
-            os.remove(temp_file_name)
+            os.remove(temp_file_path)
         except OSError:
             pass
         raise ScoreError(f"Could not save {SCORES_FILE_NAME}: {error.strerror}.")
